@@ -1,0 +1,32 @@
+# Generated from the local training environment.
+# Python: 3.10
+
+# Core training / inference
+torch==2.9.0
+transformers==4.42.4
+accelerate==1.6.0
+peft==0.10.0
+tokenizers==0.19.1
+safetensors==0.7.0
+huggingface-hub==0.36.0
+sentencepiece==0.2.1
+
+# Numeric / data utilities
+numpy==1.26.4
+scipy==1.15.3
+pandas==2.3.3
+tqdm==4.67.1
+datasets==4.4.1
+einops==0.8.1
+protobuf==6.33.1
+
+# Experiment logging and run-name generation
+wandb==0.23.1
+wonderwords==3.0.1
+
+# Optional quantization package used by legacy/experimental paths.
+bitsandbytes==0.45.2
+
+# Optional analysis/plotting scripts under rec/analysis may also need:
+# matplotlib
+# scikit-learn
