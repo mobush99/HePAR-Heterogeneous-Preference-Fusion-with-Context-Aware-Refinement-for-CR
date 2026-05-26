@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from deecho_controller import DeechoControllerMLP, controller_stats, deecho_controller_score
+from controller import DeechoControllerMLP, controller_stats, deecho_controller_score
 from loss import PairwiseRankingLoss
 
 
