@@ -2,7 +2,7 @@
 ### : Heterogeneous Preference Fusion with Context-Aware Refinement for Conversational Recommendation
 
 ## Overview
-
+<img src=img/overview.png>
 HePAR is organized around two components:
 
 - **Preference fusion backbone** (`rec/`): encodes heterogeneous conversational recommendation signals with either static weighting, dynamic weighting, or hypergraph preference fusion.
