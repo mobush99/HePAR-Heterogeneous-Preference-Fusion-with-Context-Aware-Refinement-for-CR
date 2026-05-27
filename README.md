@@ -5,8 +5,8 @@
 
 HePAR is organized around two components:
 
-- **Preference fusion backbone** (`rec/`): encodes heterogeneous conversational recommendation signals with either vanilla pooling, dynamic gating, or hypergraph preference fusion.
-- **Context-aware refinement** (`rerank/`): applies a soft de-echo reranker over backbone candidates using base scores, candidate embeddings, conversation/user context embeddings, and mentioned-item masks.
+- **Preference fusion backbone** (`rec/`): encodes heterogeneous conversational recommendation signals with either static weighting, dynamic weighting, or hypergraph preference fusion.
+- **Context-aware refinement** (`rerank/`): applies a context-aware refinement module over backbone candidates using base scores, candidate embeddings, conversation/user context embeddings, and mentioned-item masks.
 
 The repository includes code paths for the ReDial and INSPIRED conversational recommendation datasets.
 
@@ -37,7 +37,7 @@ rec/checkpoints/<dataset>/<run_name>/
 
 The main backbone modes (for ablation)
 - `vanilla`: static weighted fusion over signals.
-- `dynamic_gating`: sample-wise gating over conversation/preference signals.
+- `dynamic_gating`: sample-wise dynamic weighting over extracted signals.
 - `hypergraph`: hypergraph preference fusion with node-to-edge and edge-to-node message passing.
 
 ## Train the Context-Aware Reranker
