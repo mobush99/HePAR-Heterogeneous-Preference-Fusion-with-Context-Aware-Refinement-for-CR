@@ -13,7 +13,6 @@ REFRESH_CACHE="${REFRESH_CACHE:-0}"
 DATA_DIR="${DATA_DIR:-$ROOT/data/prep_inspired_nv_hg_seeded}"
 TRAIN_PATH="${TRAIN_PATH:-$DATA_DIR/coral_nv_hg_seed${SEED}_inspired_train_top100.jsonl}"
 VALID_PATH="${VALID_PATH:-$DATA_DIR/coral_nv_hg_seed${SEED}_inspired_valid_top100.jsonl}"
-TEST_PATH="${TEST_PATH:-$DATA_DIR/coral_nv_hg_seed${SEED}_inspired_test_top100.jsonl}"
 REC_CHECKPOINT_PATH="${REC_CHECKPOINT_PATH:-$ROOT/../rec/checkpoints/inspired/nv_hg_seed${SEED}}"
 
 OUT_DIR="${OUT_DIR:-$ROOT/outputs/inspired_rerank}"
@@ -23,7 +22,7 @@ RUN_NAME="${RUN_NAME:-inspired_nv_hg_seed${SEED}_lr${LR}_a0.15_b0.002_t0.50_d0.0
 mkdir -p "$OUT_DIR" "$CACHE_DIR"
 cd "$ROOT"
 
-for required_path in "$TRAIN_PATH" "$VALID_PATH" "$TEST_PATH" "$REC_CHECKPOINT_PATH"; do
+for required_path in "$TRAIN_PATH" "$VALID_PATH" "$REC_CHECKPOINT_PATH"; do
   if [[ ! -e "$required_path" ]]; then
     echo "missing required path: $required_path" >&2
     exit 1
@@ -42,7 +41,6 @@ fi
   --data-name inspired \
   --train-path "$TRAIN_PATH" \
   --valid-path "$VALID_PATH" \
-  --test-path "$TEST_PATH" \
   --rec-checkpoint-path "$REC_CHECKPOINT_PATH" \
   --reranker-mode soft_deecho \
   --context-source conv \
