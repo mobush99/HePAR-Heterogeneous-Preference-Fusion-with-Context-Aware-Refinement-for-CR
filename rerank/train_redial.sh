@@ -13,7 +13,6 @@ REFRESH_CACHE="${REFRESH_CACHE:-0}"
 DATA_DIR="${DATA_DIR:-$ROOT/data/prep_redial_nvembed_hg_seeded}"
 TRAIN_PATH="${TRAIN_PATH:-$DATA_DIR/coral_nvembed_hg_seed${SEED}_redial_train_top50.jsonl}"
 VALID_PATH="${VALID_PATH:-$DATA_DIR/coral_nvembed_hg_seed${SEED}_redial_valid_top50.jsonl}"
-TEST_PATH="${TEST_PATH:-$DATA_DIR/coral_nvembed_hg_seed${SEED}_redial_test_top50.jsonl}"
 REC_CHECKPOINT_PATH="${REC_CHECKPOINT_PATH:-$ROOT/../rec/checkpoints/redial/nvembed_hg_seed${SEED}}"
 
 OUT_DIR="${OUT_DIR:-$ROOT/outputs/redial_rerank}"
@@ -23,7 +22,7 @@ RUN_NAME="${RUN_NAME:-redial_nvembed_hg_b030_seed${SEED}_lr${LR}_a0.25_b0.30_t0.
 mkdir -p "$OUT_DIR" "$CACHE_DIR"
 cd "$ROOT"
 
-for required_path in "$TRAIN_PATH" "$VALID_PATH" "$TEST_PATH" "$REC_CHECKPOINT_PATH"; do
+for required_path in "$TRAIN_PATH" "$VALID_PATH" "$REC_CHECKPOINT_PATH"; do
   if [[ ! -e "$required_path" ]]; then
     echo "missing required path: $required_path" >&2
     exit 1
@@ -42,7 +41,6 @@ fi
   --data-name redial \
   --train-path "$TRAIN_PATH" \
   --valid-path "$VALID_PATH" \
-  --test-path "$TEST_PATH" \
   --rec-checkpoint-path "$REC_CHECKPOINT_PATH" \
   --base-model-name nvidia/NV-Embed-v2 \
   --rec-mode hypergraph \
