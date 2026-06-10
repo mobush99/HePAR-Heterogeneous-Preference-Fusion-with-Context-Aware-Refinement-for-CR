@@ -366,32 +366,30 @@ def build_trainer(args, provider, learning_rate: float | None = None, model=None
     )
 
 
-def load_splits(args):
+def load_train_valid_splits(args):
     documents_path = rec_documents_path(args.rec_root, args.data_name)
     train_samples = load_and_validate(args.train_path, args.limit_train, documents_path, args.candidate_top_k)
     valid_samples = load_and_validate(args.valid_path, args.limit_valid, documents_path, args.candidate_top_k)
-    test_samples = load_and_validate(args.test_path, args.limit_test, documents_path, args.candidate_top_k)
-    return documents_path, train_samples, valid_samples, test_samples
+    return documents_path, train_samples, valid_samples
 
 
 def prepare_precomputed(args):
-    documents_path, train_samples, valid_samples, test_samples = load_splits(args)
+    documents_path, train_samples, valid_samples = load_train_valid_splits(args)
     provider = build_provider(args)
     ensure_context_dim(args, provider, train_samples)
     cache_builder = build_trainer(args, provider)
     print("precomputing frozen provider batches...")
     train_batches = get_precomputed_batches(cache_builder, train_samples, args, "train", args.train_path)
     valid_batches = get_precomputed_batches(cache_builder, valid_samples, args, "valid", args.valid_path)
-    test_batches = get_precomputed_batches(cache_builder, test_samples, args, "test", args.test_path)
     print(
         f"precomputed batches: train={precomputed_batch_count(train_batches)} "
-        f"valid={precomputed_batch_count(valid_batches)} test={precomputed_batch_count(test_batches)}"
+        f"valid={precomputed_batch_count(valid_batches)}"
     )
-    return documents_path, provider, train_batches, valid_batches, test_batches
+    return documents_path, provider, train_batches, valid_batches
 
 
 def run_train(args) -> None:
-    documents_path, train_samples, valid_samples, test_samples = load_splits(args)
+    documents_path, train_samples, valid_samples = load_train_valid_splits(args)
     provider = build_provider(args)
     ensure_context_dim(args, provider, train_samples)
     trainer = build_trainer(args, provider)
@@ -400,8 +398,6 @@ def run_train(args) -> None:
         trainer.controller_output_stats(train_samples),
     )
     fit_result = trainer.fit(train_samples, valid_samples, epochs=args.epochs, selection_metric=args.selection_metric)
-    test_metrics = trainer.evaluate(test_samples)
-    print_metrics("test", test_metrics)
     save_reranker_checkpoint(
         args.reranker_checkpoint_path,
         trainer.model,
@@ -435,7 +431,7 @@ def run_precompute(args) -> None:
 
 
 def run_lr_sweep(args) -> None:
-    documents_path, provider, train_batches, valid_batches, test_batches = prepare_precomputed(args)
+    documents_path, provider, train_batches, valid_batches = prepare_precomputed(args)
     results = []
     best_result = None
     best_state = None
@@ -453,12 +449,9 @@ def run_lr_sweep(args) -> None:
             epochs=args.epochs,
             selection_metric=args.selection_metric,
         )
-        test_metrics = trainer.evaluate_precomputed(test_batches)
-        print_metrics(f"lr={learning_rate:g} test", test_metrics)
         result = {
             "learning_rate": learning_rate,
             "best_valid": fit_result["best_metric"],
-            "test": test_metrics,
             "state": trainer.model.state_dict(),
         }
         results.append(result)
@@ -488,7 +481,7 @@ def run_lr_sweep(args) -> None:
 
 
 def run_grid_sweep(args) -> None:
-    documents_path, provider, train_batches, valid_batches, test_batches = prepare_precomputed(args)
+    documents_path, provider, train_batches, valid_batches = prepare_precomputed(args)
     selection_metrics = args.selection_metrics or [args.selection_metric]
     results = []
     best_by_metric = {metric: {"result": None, "state": None} for metric in selection_metrics}
@@ -526,14 +519,6 @@ def run_grid_sweep(args) -> None:
         )
         for metric in selection_metrics:
             metric_state = fit_result["best_by_metric"][metric]["best_state"]
-            trainer.model.load_state_dict(metric_state)
-            test_metrics = trainer.evaluate_precomputed(test_batches)
-            print_metrics(
-                f"lr={learning_rate:g} epochs={epochs} deecho_hidden_dim={hidden_dim} "
-                f"deecho_dropout={dropout:g} deecho_apply_mode={args.deecho_apply_mode} "
-                f"deecho_apply_temperature={apply_temperature:g} selected_by={metric} test",
-                test_metrics,
-            )
             result = {
                 "selection_metric": metric,
                 "learning_rate": learning_rate,
@@ -551,7 +536,6 @@ def run_grid_sweep(args) -> None:
                 "early_stop_min_epochs": fit_result["early_stop_min_epochs"],
                 "early_stop_min_delta": fit_result["early_stop_min_delta"],
                 "history": fit_result["history"],
-                "test": test_metrics,
                 "state": metric_state,
             }
             results.append(result)
